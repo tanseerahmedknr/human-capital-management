@@ -1,53 +1,55 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import EmployeeService from "../services/EmployeeService";
 
-const AddEmployee = () => {
-  // We are deconstructing , defining default initial value in useState [entire object]
+const UpdateEmployee = () => {
+  // Using id as parameter
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [employee, setEmployee] = useState({
-    id: "",
+    id: id,
     firstName: "",
     lastName: "",
     email: "",
   });
 
-  const handleChange = (e) => {
-    const value = e.target.value;
-    // [... is destructing the array of employees to default value], then taking the name and value from the input fields.
-    setEmployee({ ...employee, [e.target.name]: value });
-  };
-
-  const navigates = useNavigate();
-
-  const saveEmployee = (e) => {
+  const updateEmployee = (e) => {
     e.preventDefault();
-    EmployeeService.saveEmployee(employee)
+    console.log(employee);
+    EmployeeService.updateEmployee(employee, id)
       .then((response) => {
-        console.log(response);
-        navigates("/employeeList");
+        navigate("/employeeList");
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const reset = (e) => {
-    e.preventDefault();
-    setEmployee({
-      id: "",
-      firstName: "",
-      lastName: "",
-      email: "",
-    });
+  //   Handle change is same as that of add employee
+  const handleChange = (e) => {
+    const value = e.target.value;
+    // [... is destructing the array of employees to default value], then taking the name and value from the input fields.
+    setEmployee({ ...employee, [e.target.name]: value });
   };
 
-  // border-b is border at bottom
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await EmployeeService.getEmployeeById(employee.id);
+        setEmployee(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="flex mx-auto max-w-2xl shadow border-b bg-gray-100">
       <div className="px-8 py-8">
         {/* if need space between characters then use {tracking-wider} in styling */}
         <div className="font-thin text-2xl px-48">
-          <h1>Add New Employee</h1>
+          <h1>UpdateEmployee</h1>
         </div>
         {/* form details, width-full*/}
         <div className=" items-center justify-center h-14 my-4 w-full">
@@ -94,17 +96,17 @@ const AddEmployee = () => {
 
         <div className=" items-center justify-center h-14 my-5 w-full space-x-4 pt-2">
           <button
-            onClick={saveEmployee}
+            onClick={updateEmployee}
             className="rounded text-white font-semibold bg-green-400 py-2 px-2 hover:bg-green-600 mt-2
           h-10 w-24 "
           >
-            Save
+            Update
           </button>
           <button
-            onClick={reset}
+            onClick={() => navigate("/employeeList")}
             className="rounded text-white font-semibold bg-red-400 py-2 px-2 hover:bg-red-600 mt-2 h-10 w-24 "
           >
-            Clear
+            Cancel
           </button>
         </div>
       </div>
@@ -112,4 +114,4 @@ const AddEmployee = () => {
   );
 };
 
-export default AddEmployee;
+export default UpdateEmployee;
